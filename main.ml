@@ -2,7 +2,7 @@
 (* L'encodage est fonctionnel *)
 (* En décommentant le bloque suivant, le programme est testable dans l'interpreteur *)
 
-(*#directory "/usr/lib/ocaml/lablgtk2/";;
+#directory "/usr/lib/ocaml/lablgtk2/";;
 #load "lablgtk.cma";;
 
 #directory "/usr/lib/ocaml/camlimages/";;
@@ -10,7 +10,7 @@
 #load "camlimages_core.cma";;
 #load "camlimages_png.cma";;
 #load "camlimages.cma";;
-#load "nums.cma";;*)
+#load "nums.cma";;
 
 open Images;;
 open OImages;;
@@ -51,11 +51,11 @@ let get_rgb x =
 let tableau3D_RGB img long larg =
     let t = Array.make long [||] in
         for i = 0 to (long-1) do
-                let colonne = Array.make larg (0,0,0) in
+                let ligne = Array.make larg (0,0,0) in
                 for j = 0 to (larg-1 ) do
-                    colonne.(j) <- get_rgb img.(i).(j)
+                    ligne.(j) <- get_rgb img.(i).(j)
                 done;
-                t.(i) <- colonne
+                t.(i) <- ligne
             done;
             t;;
 
@@ -94,14 +94,17 @@ let cryptage tableauRGB list_bin long larg =
             for i = 0 to (long-1) do
                     let colonne = Array.make larg (0,0,0) in
                     for j = 0 to (larg-1 ) do
+                        let compteur = ref 2 in
+                        while !compteur < taille_bin do
                         let (r,v,b) = tableauRGB.(i).(j) in
-                        for k = 3 to (taille_bin-1) do
-                            let newR = encodage r (List.nth list_bin (k-2)) in
-                            let newV = encodage v (List.nth list_bin (k-1)) in
-                            let newB = encodage b (List.nth list_bin k) in
+                            let newR = encodage r (List.nth list_bin (!compteur-2)) in
+                            let newV = encodage v (List.nth list_bin (!compteur-1)) in
+                            let newB = encodage b (List.nth list_bin !compteur) in
                             colonne.(j) <- (newR,newV,newB);
-                            k+3
-                        done
+                            compteur := !compteur + 3;
+                            Printf.printf " ((%i-%i-%i) -> (%i-%i-%i)) bin : (%i-%i-%i)\n" r v b newR newV newB (List.nth list_bin (!compteur-2)) (List.nth list_bin (!compteur-1)) (List.nth list_bin !compteur);
+                            (*Printf.printf "%i;" (List.nth list_bin (!compteur-2)); *)
+                        done;
                     done;
                     t.(i) <- colonne
                 done;
@@ -154,11 +157,16 @@ let li= List.length l in
 let need= 63-li in
 (makeList ([]) need)@l;;
 
+(*
+let rec print_list = function
+[] -> ()
+| e::l -> print_int e ; print_string " " ; print_list l
+*)
 
 
 
 (*dimensions de l’image a construire*)
-let hauteur = 600 and largeur = 1440 and longueur_c = 3;;
+let hauteur = 600 and largeur = 1440 ;;
 (*
 (*ouverture d’une fenetre graphiqueavec les dimensions de l’image*)
 Graphics.open_graph (" "^(string_of_int largeur)^"x"^(string_of_int hauteur)) ;;
@@ -172,6 +180,7 @@ let tableauRGB = (tableau3D_RGB img hauteur largeur);;
 let numero = num_of_int 123456789;;
 let list_b = b2 numero;;
 let list_bin_63b = bin_to_63b list_b;;
+
 let test_cryptage = (cryptage tableauRGB list_bin_63b hauteur largeur);;
 (*let test_decryptage = (decryptage test_cryptage hauteur largeur);;*)
 
