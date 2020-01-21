@@ -108,52 +108,43 @@ let cryptage tableauRGB list_bin long larg =
                     let colonne = Array.make larg (0,0,0) in
                     for j = 0 to (larg-1 ) do
                         let (r,v,b) = tableauRGB.(i).(j) in
-                        if !compteur < taille_bin && !compteur < (taille_bin-3) then
+                        if !compteur < taille_bin-1  then
                             let newR = encodage r (List.nth list_bin (!compteur-2)) in
                             let newV = encodage v (List.nth list_bin (!compteur-1)) in
                             let newB = encodage b (List.nth list_bin !compteur) in
-                            compteur := !compteur + 3;
                             colonne.(j) <- (newR,newV,newB);
-                            Printf.printf " ((%i-%i-%i) -> (%i-%i-%i)) bin : (%i-%i-%i) compteur : %i taille bin :%i \n" r v b newR newV newB (List.nth list_bin (!compteur-2)) (List.nth list_bin (!compteur-1)) (List.nth list_bin !compteur) !compteur taille_bin;
+                            compteur := !compteur + 3;
+                            Printf.printf " cryptage ((%i-%i-%i) -> (%i-%i-%i)) bin : (%i-%i-%i) compteur : %i taille bin :%i \n" r v b newR newV newB (List.nth list_bin (!compteur-2)) (List.nth list_bin (!compteur-1)) (List.nth list_bin !compteur) !compteur taille_bin;
+                         else if !compteur = taille_bin-1 then
+                            let newR = encodage r (List.nth list_bin (!compteur-2)) in
+                            let newV = encodage v (List.nth list_bin (!compteur-1)) in
+                            let newB = encodage b (List.nth list_bin !compteur) in
+                            colonne.(j) <- (newR,newV,newB);
+                            compteur := !compteur + 1;
                          else colonne.(j) <- (r,v,b);
                    done;
                     t.(i) <- colonne
                 done;
                 t;;
 
-(*
-let decryptage tableauCrypte long larg =
-    let res = Array.make (long*larg) [||] in
-    let intermediaire = ref [] in
-    for i = 0 to (long-1) do
-        for j = 0 to (larg-1 ) do
-            let (r,v,b) = tableauCrypte.(i).(j) in
-            for k=0 to 21 do
-                intermediaire := !intermediaire@[r mod 2];
-                intermediaire := !intermediaire@[v mod 2];
-                intermediaire := !intermediaire@[b mod 2];
-            done;
-            res := !res@[b10 !intermediaire]; (*res prends la valeur en base 10 de notre suite de bit*)
-            intermediaire := [];
-        done;
-    done;
-    res;;
-*)
+(*Decryptage d'un message binaire dans un tableau 2D ayant dans chaque cellule un tuple (r,g,b) *)
 let decryptage tabRGB largeur longueur =
+  let resultat = ref [] in
   let message = ref [] in
   let compteur = ref 0 in
     for i = 0 to (largeur - 1) do
         for j = 0 to (longueur - 1) do
             if !compteur < 63 then
               let (r,v,b) = tabRGB.(i).(j) in
-                  message := !message@[r mod 2];
-                  message := !message@[v mod 2];
-                  message := !message@[b mod 2];
-                  Printf.printf " (%i-%i-%i) -> decryptage -> (%i-%i-%i)  \n" r v b (r mod 2) (v mod 2) (b mod 2);
+                  message := !message@[mod_num (num_of_int r) deux];
+                  message := !message@[mod_num (num_of_int v) deux];
+                  message := !message@[mod_num (num_of_int b) deux];
+                  (*Printf.printf " (%i-%i-%i) -> decryptage -> (%i-%i-%i)  \n" r v b (mod_num (num_of_int r) deux) (v mod 2) (b mod 2);*)
                   compteur := !compteur + 3;
         done;
     done;
-    message;;
+    resultat := !resultat@[b10 !message];
+    resultat;;
 
 let to_int_tab mess =
   let l = String.split_on_char ';' mess in
@@ -200,9 +191,9 @@ let list_b = b2 numero;;
 let list_bin_63b = bin_to_63b list_b;;
 let test_cryptage = (cryptage tableauRGB list_bin_63b hauteur largeur);;
 let test_decryptage = (decryptage test_cryptage hauteur largeur);;
-(*
+
 let img_crypte = (transformation_apres_cryptage test_cryptage hauteur largeur);;
-*)
+
 
 
 (*
@@ -213,7 +204,7 @@ Graphics.set_window_title "Mon image" ;;
 
 (*Affiche l'image en sortie sur la fenêtre graphique*)
 let image_sortie = Graphics.make_image img_crypte;;
-
+let image_sortie = Graphics.make_image img;;
 (*dessin de l’image dans la fenetre graphiquedepuis le coin inferieur gauche*)
 Graphics.draw_image image_sortie 0 0 ;;
 *)
