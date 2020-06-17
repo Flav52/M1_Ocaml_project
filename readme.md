@@ -1,4 +1,6 @@
-Sujet 21: Stéganographie
+# Projet: M1 Ocaml
+Stéganographie : programmation en language CAML d'un cryptage RSA d'un message dans une image.
+
 RIGLET FLAVIEN
 LARDI NICOLAS
 
